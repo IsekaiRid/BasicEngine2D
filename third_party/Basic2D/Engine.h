@@ -18,6 +18,7 @@
 #include <Basic2D/Rendering/Win32_Application.cpp>
 #include <Basic2D/Rendering/StructRender.h>
 #include <Basic2D/Camera2D.h>
+#include <Basic2D/Font.h>
 #include <Basic2D/Collision.h>
 #include <Basic2D/Tools/DirectionUtils.h>
 #include <Basic2D/Tools/RulerTool.h>

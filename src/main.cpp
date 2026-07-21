@@ -14,14 +14,16 @@ int main()
         return -1;
 
     Collision_Shader_Init("assets/shader/collision_debug.vert", "assets/shader/collision_debug.frag");
-
+    
     Create_Shader_Init(&m, "assets/shader/default.vert", "assets/shader/default.frag");
+
+    Text_Init();
 
     uiCam.targetResolution = {0.0f, 0.0f};
     uiCam.active = false;
 
     // Collision_Debug_Enable();
-    // Ruler_Enable();
+    Ruler_Enable();
     rendy_on_game();
 
     bool running = true;
@@ -61,11 +63,12 @@ int main()
         render_shader();
         Ruler_RenderVisual();
 
-        SDL_GL_SwapWindow(window);
+        SwapWindowSynced();
         PostUpdateInput();
     }
 
     render_clean();
+    Text_Clean();
     SDL_GL_DestroyContext(glContext);
     SDL_DestroyWindow(window);
     SDL_Quit();

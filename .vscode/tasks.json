@@ -4,13 +4,25 @@
         {
             "label": "Build",
             "type": "shell",
-            "windows":
-            {
+            "windows": {
                 "command": "sh build.sh"
             },
-            "linux":
-            {
+            "linux": {
                 "command": "./build.sh",
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build Debug",
+            "type": "shell",
+            "windows": {
+                "command": "sh build.sh debug"
+            },
+            "linux": {
+                "command": "./build.sh debug",
             },
             "group": {
                 "kind": "build",

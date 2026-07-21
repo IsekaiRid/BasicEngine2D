@@ -2,7 +2,6 @@
 
 #include <Basic2D/Engine.h>
 
-
 inline void Create_Shader_Init(Memory *tempMemory, const char *FilePathVertex, const char *FilePathFragman)
 {
     LOG_ASSERT(tempMemory, "Memory allocator is null.");
@@ -17,7 +16,7 @@ inline void Create_Shader_Init(Memory *tempMemory, const char *FilePathVertex, c
     vertexSource[sizeVertex] = '\0';
 
     shaderData.program.vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(shaderData.program.vertexShaderId, 1, (const char**)&vertexSource, nullptr);
+    glShaderSource(shaderData.program.vertexShaderId, 1, (const char **)&vertexSource, nullptr);
     glCompileShader(shaderData.program.vertexShaderId);
 
     glGetShaderiv(shaderData.program.vertexShaderId, GL_COMPILE_STATUS, &success);
@@ -34,7 +33,7 @@ inline void Create_Shader_Init(Memory *tempMemory, const char *FilePathVertex, c
     fragmentSource[sizeFragment] = '\0';
 
     shaderData.program.fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(shaderData.program.fragmentShaderId, 1, (const char**)&fragmentSource, nullptr);
+    glShaderSource(shaderData.program.fragmentShaderId, 1, (const char **)&fragmentSource, nullptr);
     glCompileShader(shaderData.program.fragmentShaderId);
 
     glGetShaderiv(shaderData.program.fragmentShaderId, GL_COMPILE_STATUS, &success);
@@ -95,9 +94,6 @@ inline void render_shader()
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D_ARRAY, shaderData.atlas.textureArrayId);
-    glUniform1i(glGetUniformLocation(shaderData.program.programId, "AtlasTexture"), 0);
-
-    glUniform1f(glGetUniformLocation(shaderData.program.programId, "u_Time"), GetTotalTime());
 
     glUniform2f(shaderData.sprite.screenSizeLoc, renderWindows.ScreenSize.x, renderWindows.ScreenSize.y);
     glBindVertexArray(shaderData.sprite.VAO);

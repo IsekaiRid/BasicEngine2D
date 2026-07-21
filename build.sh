@@ -1,5 +1,11 @@
+#!/usr/bin/env bash
+set -e
+
 BUILD_DIR="build"
 OUTPUT="$BUILD_DIR/main.exe"
+
+# Mode: jalanin "./build.sh debug" buat debug, atau "./build.sh" / "./build.sh release" buat release
+BUILD_MODE="${1:-release}"
 
 INCLUDES=(
     "-Ithird_party"
@@ -19,18 +25,18 @@ LIB_DIRS=(
 )
 
 LIBS=(
-    "-lSDL3"           
-    "-lSDL3_image"    
+    "-lSDL3"
+    "-lSDL3_image"
     "-lopengl32"
     "-lgdi32"
     "-luser32"
     "-lshell32"
-    "-lwinmm"          
-    "-lole32"          
-    "-luuid"          
-    "-lsetupapi"      
-    "-limm32"          
-    "-lversion"        
+    "-lwinmm"
+    "-lole32"
+    "-luuid"
+    "-lsetupapi"
+    "-limm32"
+    "-lversion"
 )
 
 WARNINGS=(
@@ -44,11 +50,23 @@ LINKER_FLAGS=(
     "-Wl,/SUBSYSTEM:CONSOLE"
 )
 
+# === PILIH MODE ===
+if [ "$BUILD_MODE" = "debug" ]; then
+    OPT_FLAGS=("-g" "-O0")
+    echo "🔧 Building DEBUG (no optimization, dengan simbol debug)..."
+elif [ "$BUILD_MODE" = "release" ]; then
+    OPT_FLAGS=("-O2" "-DNDEBUG")
+    echo "🚀 Building RELEASE (optimized, buat ukur performa/CPU asli)..."
+else
+    echo "❌ Mode tidak dikenal: '$BUILD_MODE' (pakai 'debug' atau 'release')"
+    exit 1
+fi
+
 # === BUILD ===
-echo "Building..."
 mkdir -p "$BUILD_DIR"
 
-clang++ -g \
+clang++ \
+    "${OPT_FLAGS[@]}" \
     "${INCLUDES[@]}" \
     "$MAIN_CPP" \
     "$GLAD_C" \
@@ -59,7 +77,15 @@ clang++ -g \
     "${LINKER_FLAGS[@]}"
 
 if [ $? -eq 0 ]; then
-    echo "✅ Build success: $OUTPUT"
+    echo "✅ Build success ($BUILD_MODE): $OUTPUT"
+    if [ -d "assets" ]; then
+        mkdir -p "$BUILD_DIR/assets"
+        cp -r assets/. "$BUILD_DIR/assets/"
+        echo "📁 Assets disalin ke $BUILD_DIR/assets"
+    else
+        echo "⚠️  Folder 'assets' tidak ditemukan di root project, dilewati"
+    fi
 else
     echo "❌ Build failed!"
+    exit 1
 fi

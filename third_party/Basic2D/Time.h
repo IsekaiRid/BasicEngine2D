@@ -4,22 +4,33 @@
 
 struct TimeData
 {
-    double lastTime = -1.0;
+    Uint64 lastCounter = 0;
+    Uint64 frequency = 0;
     float deltaTime = 0.0f;
     float totalTime = 0.0f;
+    bool initialized = false;
 };
 
 static TimeData timeData;
 
 static void UpdateTime()
 {
-    double currentTime = (double)SDL_GetTicks() / 1000.0;
+    if (!timeData.initialized)
+    {
+        timeData.frequency = SDL_GetPerformanceFrequency();
+        timeData.lastCounter = SDL_GetPerformanceCounter();
+        timeData.initialized = true;
+    }
 
-    if (timeData.lastTime < 0.0)
-        timeData.lastTime = currentTime;
+    Uint64 currentCounter = SDL_GetPerformanceCounter();
+    Uint64 deltaCounter = currentCounter - timeData.lastCounter;
+    timeData.lastCounter = currentCounter;
 
-    timeData.deltaTime = (float)(currentTime - timeData.lastTime);
-    timeData.lastTime = currentTime;
+    timeData.deltaTime = (float)((double)deltaCounter / (double)timeData.frequency);
+    
+    const float maxDeltaTime = 0.25f;
+    if (timeData.deltaTime > maxDeltaTime)
+        timeData.deltaTime = maxDeltaTime;
 
     timeData.totalTime += timeData.deltaTime;
 }
