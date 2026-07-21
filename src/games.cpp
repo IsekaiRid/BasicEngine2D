@@ -12,7 +12,7 @@ void rendy_on_game()
 
 void update_game()
 {
-    Ruler_Update();
+    // Ruler_Update();
 
     RegisterWorldCollidersFromArray(s_LevelColliders, 1);
 
@@ -31,7 +31,7 @@ void update_ui()
 
     if (timer >= 0.5f)
     {
-        cpuDisplay = GetProcessCPUUsagePercent();
+        cpuDisplay = Basic2D::Tools::GetProcessCPUUsagePercent();
         timer = 0.0f;
     }
 

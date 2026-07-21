@@ -1,6 +1,14 @@
 #pragma once
 
-#include <Basic2D/Engine.h>
+#include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <Basic2D/Core/Camera2D.h>
+#include <Basic2D/Core/Collision.h>
+#include <Basic2D/Core/Logger.h>
+#include <Basic2D/Rendering/StructRender.h>
+#include <Basic2D/Rendering/Win_SDL/Input/SDL_Input.h>
+#include <Basic2D/Rendering/Win_SDL/Win32_SDL.h>
 
 // ============================================================
 // RULER POSITION TOOL v5.0 — INTERACTIVE BOX
@@ -23,16 +31,16 @@
 struct RulerTool
 {
     bool active = false;
-    bool hasBox = false;        // apakah sedang ada box yang diedit
-    bool isDragging = false;    // sedang drag sesuatu
-    int dragPointIndex = -1;    // -1=none, 0-3=sudut, 4=rotasi
+    bool hasBox = false;     // apakah sedang ada box yang diedit
+    bool isDragging = false; // sedang drag sesuatu
+    int dragPointIndex = -1; // -1=none, 0-3=sudut, 4=rotasi
 
     glm::vec2 boxCenter = {0.0f, 0.0f};
-    glm::vec2 boxSize = {100.0f, 100.0f};  // default size
+    glm::vec2 boxSize = {100.0f, 100.0f}; // default size
     float boxRotation = 0.0f;
 
     glm::vec2 currentMouseWorld = {0.0f, 0.0f};
-    glm::vec2 dragOffset = {0.0f, 0.0f};   // offset mouse saat mulai drag
+    glm::vec2 dragOffset = {0.0f, 0.0f}; // offset mouse saat mulai drag
 
     // Hasil akhir (setelah lock)
     glm::vec2 measuredPos = {0.0f, 0.0f};
@@ -50,12 +58,12 @@ inline glm::vec2 ScreenToWorld(glm::vec2 screenPos)
 {
     glm::vec2 screenSize = renderWindows.ScreenSize;
     glm::vec2 baseSize = (gameCam.targetResolution.x > 0.0f && gameCam.targetResolution.y > 0.0f)
-                         ? gameCam.targetResolution : screenSize;
+                             ? gameCam.targetResolution
+                             : screenSize;
 
     return {
         gameCam.pos.x + (screenPos.x / screenSize.x * baseSize.x) / gameCam.zoom.x,
-        gameCam.pos.y + (screenPos.y / screenSize.y * baseSize.y) / gameCam.zoom.y
-    };
+        gameCam.pos.y + (screenPos.y / screenSize.y * baseSize.y) / gameCam.zoom.y};
 }
 
 // ============================================================
@@ -73,10 +81,10 @@ inline void GetBoxCorners(glm::vec2 center, glm::vec2 size, float rotationDeg, g
     // Screen/World: Y=0 di TOP, Y meningkat ke BAWAH
     // Jadi: "top" = Y lebih kecil, "bottom" = Y lebih besar
     glm::vec2 local[4] = {
-        {-half.x,  half.y},  // top-left    (x-, y+ dalam screen coords)
-        { half.x,  half.y},  // top-right   (x+, y+ dalam screen coords)
-        { half.x, -half.y},  // bottom-right(x+, y- dalam screen coords)
-        {-half.x, -half.y}   // bottom-left (x-, y- dalam screen coords)
+        {-half.x, half.y}, // top-left    (x-, y+ dalam screen coords)
+        {half.x, half.y},  // top-right   (x+, y+ dalam screen coords)
+        {half.x, -half.y}, // bottom-right(x+, y- dalam screen coords)
+        {-half.x, -half.y} // bottom-left (x-, y- dalam screen coords)
     };
 
     // Apply rotasi + translate
@@ -104,8 +112,7 @@ inline glm::vec2 GetRotationHandlePos(glm::vec2 center, glm::vec2 size, float ro
 
     return {
         center.x + (local.x * c - local.y * s),
-        center.y + (local.x * s + local.y * c)
-    };
+        center.y + (local.x * s + local.y * c)};
 }
 
 // ============================================================
@@ -141,8 +148,16 @@ inline void Ruler_Toggle()
     }
 }
 
-inline void Ruler_Enable()  { if (!rulerTool.active) Ruler_Toggle(); }
-inline void Ruler_Disable() { if (rulerTool.active)  Ruler_Toggle(); }
+inline void Ruler_Enable()
+{
+    if (!rulerTool.active)
+        Ruler_Toggle();
+}
+inline void Ruler_Disable()
+{
+    if (rulerTool.active)
+        Ruler_Toggle();
+}
 
 // ============================================================
 // SPAWN BOX BARU DI POSISI MOUSE
@@ -153,7 +168,7 @@ inline void Ruler_SpawnBox()
     {
         // Spawn box baru di posisi mouse
         rulerTool.boxCenter = rulerTool.currentMouseWorld;
-        rulerTool.boxSize = {100.0f, 100.0f};  // default
+        rulerTool.boxSize = {100.0f, 100.0f}; // default
         rulerTool.boxRotation = 0.0f;
         rulerTool.hasBox = true;
         rulerTool.hasMeasurement = false;
@@ -166,7 +181,7 @@ inline void Ruler_SpawnBox()
         rulerTool.measuredSize = rulerTool.boxSize;
         rulerTool.measuredRotation = rulerTool.boxRotation;
         rulerTool.hasMeasurement = true;
-        rulerTool.hasBox = false;  // hapus box edit, simpan hasil
+        rulerTool.hasBox = false; // hapus box edit, simpan hasil
 
         LOG_TRACE("");
         LOG_TRACE("========== RULER LOCKED ==========");
@@ -201,10 +216,15 @@ inline void Ruler_CancelBox()
 // ============================================================
 inline void Ruler_Update()
 {
-    if (!rulerTool.active) return;
+    if (!rulerTool.active)
+        return;
 
     // Toggle dengan tombol R
-    if (Pressed(ActionCode::R)) { Ruler_Toggle(); return; }
+    if (Pressed(ActionCode::R))
+    {
+        Ruler_Toggle();
+        return;
+    }
 
     // Update posisi mouse di world space
     rulerTool.currentMouseWorld = ScreenToWorld(MousePos());
@@ -224,7 +244,8 @@ inline void Ruler_Update()
     }
 
     // Kalau tidak ada box, tidak perlu proses drag
-    if (!rulerTool.hasBox) return;
+    if (!rulerTool.hasBox)
+        return;
 
     // Hitung posisi 4 sudut dan titik rotasi
     glm::vec2 corners[4];
@@ -234,7 +255,7 @@ inline void Ruler_Update()
     // --- MULAI DRAG (KLIK KIRI) ---
     if (Pressed(ActionCode::MouseLeft) && !rulerTool.isDragging)
     {
-        float grabRadius = 15.0f;  // radius untuk "nangkep" titik
+        float grabRadius = 15.0f; // radius untuk "nangkep" titik
         float bestDist = grabRadius;
         int bestIdx = -1;
 
@@ -254,7 +275,7 @@ inline void Ruler_Update()
         if (rotDist < bestDist)
         {
             bestDist = rotDist;
-            bestIdx = 4;  // index 4 = rotasi
+            bestIdx = 4; // index 4 = rotasi
         }
 
         if (bestIdx >= 0)
@@ -322,12 +343,15 @@ inline void Ruler_Update()
 // ============================================================
 inline void Ruler_RenderVisual()
 {
-    if (!rulerTool.active) return;
+    if (!rulerTool.active)
+        return;
 
     // Simpan state OpenGL
     GLboolean blendEnabled = glIsEnabled(GL_BLEND);
-    GLint lastProgram;  glGetIntegerv(GL_CURRENT_PROGRAM, &lastProgram);
-    GLint lastVAO;      glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &lastVAO);
+    GLint lastProgram;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &lastProgram);
+    GLint lastVAO;
+    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &lastVAO);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -380,10 +404,18 @@ inline void Ruler_RenderVisual()
             // Warna berbeda per sudut
             switch (i)
             {
-                case 0: pts[i].Color = {1.0f, 0.0f, 0.0f, 0.9f}; break; // Merah (TL)
-                case 1: pts[i].Color = {1.0f, 1.0f, 0.0f, 0.9f}; break; // Kuning (TR)
-                case 2: pts[i].Color = {0.0f, 1.0f, 1.0f, 0.9f}; break; // Cyan (BR)
-                case 3: pts[i].Color = {1.0f, 0.0f, 1.0f, 0.9f}; break; // Magenta (BL)
+            case 0:
+                pts[i].Color = {1.0f, 0.0f, 0.0f, 0.9f};
+                break; // Merah (TL)
+            case 1:
+                pts[i].Color = {1.0f, 1.0f, 0.0f, 0.9f};
+                break; // Kuning (TR)
+            case 2:
+                pts[i].Color = {0.0f, 1.0f, 1.0f, 0.9f};
+                break; // Cyan (BR)
+            case 3:
+                pts[i].Color = {1.0f, 0.0f, 1.0f, 0.9f};
+                break; // Magenta (BL)
             }
         }
         glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(CollisionRenderData) * 4, pts);
@@ -433,10 +465,8 @@ inline void Ruler_RenderVisual()
     if (rulerTool.hasMeasurement)
     {
         CollisionRenderData result[2];
-        result[0] = {rulerTool.measuredPos, rulerTool.measuredSize, rulerTool.measuredRotation,
-                     (int)square, {}, {0.0f, 1.0f, 0.0f, 0.5f}}; // Hijau
-        result[1] = {rulerTool.measuredPos, {12.0f, 12.0f}, 0.0f,
-                     (int)circle, {}, {1.0f, 1.0f, 1.0f, 0.9f}}; // Putih center
+        result[0] = {rulerTool.measuredPos, rulerTool.measuredSize, rulerTool.measuredRotation, (int)square, {}, {0.0f, 1.0f, 0.0f, 0.5f}}; // Hijau
+        result[1] = {rulerTool.measuredPos, {12.0f, 12.0f}, 0.0f, (int)circle, {}, {1.0f, 1.0f, 1.0f, 0.9f}};                               // Putih center
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, shaderData.collision.collisionDataSSBO);
         glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(CollisionRenderData) * 2, result);
@@ -447,5 +477,6 @@ inline void Ruler_RenderVisual()
     // Restore state
     glUseProgram(lastProgram);
     glBindVertexArray(lastVAO);
-    if (!blendEnabled) glDisable(GL_BLEND);
+    if (!blendEnabled)
+        glDisable(GL_BLEND);
 }

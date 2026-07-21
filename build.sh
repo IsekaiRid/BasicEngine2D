@@ -19,6 +19,7 @@ INCLUDES=(
 
 GLAD_C="third_party/GLAD/src/glad.c"
 MAIN_CPP="src/main.cpp"
+SDL_WIN32_CPP="third_party/Basic2D/Rendering/Win_SDL/Win32_SDL.cpp"
 
 LIB_DIRS=(
     "-Lthird_party/SDL/lib/x64"
@@ -70,6 +71,7 @@ clang++ \
     "${INCLUDES[@]}" \
     "$MAIN_CPP" \
     "$GLAD_C" \
+    "$SDL_WIN32_CPP" \
     -o "$OUTPUT" \
     "${LIB_DIRS[@]}" \
     "${LIBS[@]}" \

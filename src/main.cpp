@@ -14,7 +14,7 @@ int main()
         return -1;
 
     Collision_Shader_Init("assets/shader/collision_debug.vert", "assets/shader/collision_debug.frag");
-    
+
     Create_Shader_Init(&m, "assets/shader/default.vert", "assets/shader/default.frag");
 
     Text_Init();
@@ -23,7 +23,7 @@ int main()
     uiCam.active = false;
 
     // Collision_Debug_Enable();
-    Ruler_Enable();
+    // Ruler_Enable();
     rendy_on_game();
 
     bool running = true;

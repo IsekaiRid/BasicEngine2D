@@ -1,6 +1,7 @@
 #pragma once
 
-#include <Basic2D/Engine.h>
+#include <Basic2D/Core/Assets.h>
+#include <glm/glm.hpp>
 
 struct ShaderProgram
 {
